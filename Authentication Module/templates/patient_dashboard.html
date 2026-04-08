@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediSync | Patient Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body style="background: #f4f7f6;">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#"><i class='bx bxs-plus-circle'></i> MediSync</a>
+            <div class="d-flex align-items-center">
+                <span class="me-3 text-muted">Welcome, <b>{{ session['user'] }}</b></span>
+                <a href="/logout" class="btn btn-sm btn-outline-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4">My Billing History</h4>
+                        {% if bills %}
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Bill ID</th>
+                                        <th>Total Amount</th>
+                                        <th class="text-end">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in bills %}
+                                    <tr>
+                                        <td>{{ bill.date }}</td>
+                                        <td>#MS-{{ bill.id }}</td>
+                                        <td class="fw-bold">₹{{ bill.total_amount }}</td>
+                                        <td class="text-end"><span class="badge bg-success">Paid</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class='bx bx-receipt text-muted' style="font-size: 50px;"></i>
+                            <p class="text-muted mt-2">No bills found in your history.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

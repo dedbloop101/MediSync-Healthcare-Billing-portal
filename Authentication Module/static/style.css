@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: url(./bg-2.jpg) no-repeat;
+  background-position: center;
+}
+
+.container {
+  perspective: 1000px;
+  width: 380px;
+  position: relative;
+}
+
+.flip-card {
+  width: 100%;
+  min-height: 560px; /* Increased to fit the role selector */
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
+
+.flipped {
+  transform: rotateY(180deg);
+}
+
+.form-box {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  backface-visibility: hidden;
+  background: rgba(255, 255, 255, 0.25); /* Slightly more opaque for better contrast */
+  backdrop-filter: blur(15px);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  text-align: center;
+  padding: 30px 25px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+#register-form {
+  transform: rotateY(180deg);
+}
+
+.input-box {
+  position: relative;
+  width: 100%;
+  margin: 12px 0;
+}
+
+/* FORCE VISIBILITY FOR ROLE SELECTOR */
+.input-box select {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border: 1.5px solid #000 !important; /* Thick black border */
+  border-radius: 6px;
+  background-color: #ffffff !important; /* Solid white background */
+  color: #000 !important; /* Pure black text */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure the dropdown icon stays on top */
+.input-box i.bxs-briefcase {
+  color: #000 !important;
+  z-index: 5;
+}
+
+.input-box i {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #333;
+  font-size: 18px;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white !important; /* Force white text on blue button */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 15px;
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #000; /* Dark text for light background */
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.toggle-btn span {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+#password-strength {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #d9534f; /* Alert red for visibility */
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: 400px;
+  }
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSync | Doctor Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1"><i class="bi bi-heart-pulse"></i> MediSync Doctor Portal</span>
+        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white font-weight-bold">Select Patient</div>
+                <div class="card-body">
+                    <select class="form-select mb-3" id="patientSelect" name="patient_id">
+                        <option selected disabled>Choose Patient...</option>
+                        <option value="1">Patient: Chirag (ID: 101)</option>
+                        <option value="2">Patient: Varun (ID: 102)</option>
+                    </select>
+                    <div class="small text-muted">Recent Vitals: BP 120/80, Temp 98.6°F</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span>Digital Prescription & Billing</span>
+                    <button type="button" class="btn btn-success btn-sm" onclick="addRow()">
+                        <i class="bi bi-plus-circle"></i> Add Medicine
+                    </button>
+                </div>
+                <div class="card-body">
+                    <form action="/submit_prescription" method="POST">
+                        <div id="medicineRows">
+                            <div class="row g-2 mb-3 medicine-row">
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Medicine Name</label>
+                                    <select class="form-select" name="medicine[]" required>
+                                        <option value="10" data-price="50">Paracetamol (₹50)</option>
+                                        <option value="11" data-price="120">Amoxicillin (₹120)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small text-muted">Quantity</label>
+                                    <input type="number" class="form-control" name="qty[]" min="1" value="1" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label small text-muted">Dosage</label>
+                                    <input type="text" class="form-control" name="dosage[]" placeholder="1-0-1">
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="this.parentElement.parentElement.remove()">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Generate Prescription & Invoice</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addRow() {
+        const row = `
+        <div class="row g-2 mb-3 medicine-row">
+            <div class="col-md-6">
+                <select class="form-select" name="medicine[]" required>
+                    <option value="10" data-price="50">Paracetamol (₹50)</option>
+                    <option value="11" data-price="120">Amoxicillin (₹120)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" name="qty[]" min="1" value="1" required>
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" name="dosage[]" placeholder="1-0-1">
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>`;
+        document.getElementById('medicineRows').insertAdjacentHTML('beforeend', row);
+    }
+</script>
+</body>
+</html>

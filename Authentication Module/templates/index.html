@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>MediSync | Login & Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Styling the dropdown to match your theme */
+        .input-box select {
+            width: 100%;
+            background: transparent;
+            color: #fff;
+            border: none;
+            outline: none;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        .input-box select option {
+            background: #333; /* Dark background for dropdown options */
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="flip-card" id="flip-card">
+            
+            <!-- Login Form -->
+            <div class="form-box" id="login-form">
+                <h2 class="login">Login</h2>
+                <form id="loginForm" action="/login" method="POST">
+                    <div class="input-box">
+                        <input type="email" name="email" id="login-email" placeholder="Email" required>
+                        <i class='bx bxs-envelope'></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" id="login-password" placeholder="Password" required>
+                        <i class='bx bxs-lock-alt'></i>
+                    </div>
+                    <button class="btn" type="submit">Login</button>
+                </form>
+                <p class="para"><b>Or login with</b></p>
+                <div class="social-btns">
+                    <button type="button"><i class='bx bxl-google'></i></button>
+                    <button type="button"><i class='bx bxl-facebook'></i></button>
+                    <button type="button"><i class='bx bxl-linkedin'></i></button>
+                </div>
+                <button type="button" class="toggle-btn" id="to-register">Don't have an account? <span>Register</span></button>
+            </div>
+
+            <!-- Register Form -->
+            <div class="form-box" id="register-form">
+                <h2>Register</h2>
+                <form id="registerForm" action="/register" method="POST">
+                    <div class="input-box">
+                        <input type="text" name="name" id="reg-name" placeholder="Full Name" required>
+                        <i class='bx bxs-user'></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="date" name="dob" id="reg-dob" required>
+                        <i class='bx bxs-calendar'></i>
+                    </div>
+                    
+                    <!-- NEW: Role Selection Dropdown -->
+                    <div class="input-box">
+                        <select name="role" id="reg-role" required>
+                            <option value="" disabled selected>Select Role</option>
+                            <option value="patient">Patient</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <i class='bx bxs-briefcase'></i>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="email" name="email" id="reg-email" placeholder="Email" required>
+                        <i class='bx bxs-envelope'></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="password" id="reg-password" placeholder="Password" required>
+                        <i class='bx bxs-lock-alt'></i>
+                    </div>
+
+                    <div id="password-strength"></div>
+                    <button class="btn" type="submit">Register</button>
+                </form>
+                <p class="para"><b>Or register with</b></p>
+                <div class="social-btns">
+                    <button type="button"><i class='bx bxl-google'></i></button>
+                    <button type="button"><i class='bx bxl-facebook'></i></button>
+                    <button type="button"><i class='bx bxl-linkedin'></i></button>
+                </div>
+                <button type="button" class="toggle-btn" id="to-login">Already have an account? <span>Login</span></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
