@@ -1,42 +1,30 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
+from fpdf import FPDF
 import sqlite3
 import bcrypt
 import os
+import io
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-DB_PATH = 'database.db'
+# Database path setup
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, 'database.db')
+
+login_attempts = {}
 
 def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            dob TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password BLOB NOT NULL,
-            role TEXT DEFAULT 'patient' 
-        )
-        ''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS inventory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            price REAL NOT NULL,
-            stock INTEGER NOT NULL
-        )
-        ''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS bills (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            patient_name TEXT,
-            total_amount REAL,
-            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, dob TEXT, 
+            email TEXT UNIQUE, password BLOB, role TEXT DEFAULT 'patient')''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS inventory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, price REAL, stock INTEGER)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS bills (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, patient_name TEXT, 
+            total_amount REAL, medicine_list TEXT, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         
         cursor.execute("SELECT COUNT(*) FROM inventory")
         if cursor.fetchone()[0] == 0:
@@ -54,17 +42,16 @@ def register():
     name = request.form['name']
     dob = request.form['dob']
     email = request.form['email']
-    role = request.form.get('role', 'patient') 
+    role = request.form.get('role', 'patient')
     password = request.form['password'].encode('utf-8')
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (name, dob, email, password, role) VALUES (?, ?, ?, ?, ?)",
-                           (name, dob, email, hashed, role))
+            conn.execute("INSERT INTO users (name, dob, email, password, role) VALUES (?, ?, ?, ?, ?)",
+                         (name, dob, email, hashed, role))
             conn.commit()
-            return redirect(url_for('registration_success'))
+        return redirect(url_for('registration_success'))
     except sqlite3.IntegrityError:
         return jsonify({'success': False, 'message': 'Email already registered'})
 
@@ -73,94 +60,98 @@ def login():
     email = request.form['email']
     password = request.form['password'].encode('utf-8')
 
+    if login_attempts.get(email, 0) >= 3:
+        return jsonify({'success': False, 'message': 'Account locked!'})
+
     with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-        user = cursor.fetchone()
+        user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
 
     if user and bcrypt.checkpw(password, user[4]):
-        session['user'] = user[1]
-        session['role'] = user[5]
-        
-        # Determine redirect target based on role
-        if user[5] == 'doctor':
-            target = url_for('doctor_dashboard')
-        elif user[5] == 'admin':
-            target = url_for('admin_dashboard')
-        else:
-            target = url_for('patient_dashboard')
-            
-        return jsonify({'success': True, 'redirect': target})
+        login_attempts[email] = 0
+        session['user'], session['role'] = user[1], user[5]
+        targets = {'doctor': 'doctor_dashboard', 'admin': 'admin_dashboard', 'patient': 'patient_dashboard'}
+        return jsonify({'success': True, 'redirect': url_for(targets.get(user[5], 'home'))})
     
+    login_attempts[email] = login_attempts.get(email, 0) + 1
     return jsonify({'success': False, 'message': 'Invalid credentials'})
 
-# --- DOCTOR DASHBOARD ---
+# --- DASHBOARDS ---
 @app.route('/doctor/dashboard')
 def doctor_dashboard():
-    if session.get('role') != 'doctor':
-        return redirect(url_for('home'))
-        
+    if session.get('role') != 'doctor': return redirect(url_for('home'))
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        medicines = cursor.execute("SELECT * FROM inventory").fetchall()
-        patients = cursor.execute("SELECT name FROM users WHERE role = 'patient'").fetchall()
-        recent_bills = cursor.execute("SELECT * FROM bills ORDER BY date DESC LIMIT 5").fetchall()
-        
+        medicines = conn.execute("SELECT * FROM inventory").fetchall()
+        patients = conn.execute("SELECT name FROM users WHERE role = 'patient'").fetchall()
+        recent_bills = conn.execute("SELECT * FROM bills ORDER BY date DESC LIMIT 5").fetchall()
     return render_template('doc_dashboard.html', medicines=medicines, patients=patients, recent_bills=recent_bills)
 
-# --- PATIENT DASHBOARD ---
 @app.route('/patient/dashboard')
 def patient_dashboard():
-    if session.get('role') != 'patient':
-        return redirect(url_for('home'))
-        
+    if session.get('role') != 'patient': return redirect(url_for('home'))
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
-        # We fetch bills where the patient_name matches the session user name
-        my_bills = conn.execute("SELECT * FROM bills WHERE patient_name = ? ORDER BY date DESC", (session['user'],)).fetchall()
-        
-    return render_template('patient_dashboard.html', bills=my_bills)
+        bills = conn.execute("SELECT * FROM bills WHERE patient_name = ? ORDER BY date DESC", (session['user'],)).fetchall()
+    return render_template('patient_dashboard.html', bills=bills)
 
-# --- ADMIN DASHBOARD ---
 @app.route('/admin/dashboard')
 def admin_dashboard():
-    if session.get('role') != 'admin':
-        return redirect(url_for('home'))
-        
+    if session.get('role') != 'admin': return redirect(url_for('home'))
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         inventory = conn.execute("SELECT * FROM inventory").fetchall()
-        all_bills = conn.execute("SELECT * FROM bills ORDER BY date DESC").fetchall()
-        all_users = conn.execute("SELECT name, email, role FROM users").fetchall()
-        
-    return render_template('admin_dashboard.html', inventory=inventory, bills=all_bills, users=all_users)
+        bills = conn.execute("SELECT * FROM bills ORDER BY date DESC").fetchall()
+        users = conn.execute("SELECT name, email, role FROM users").fetchall()
+    return render_template('admin_dashboard.html', inventory=inventory, bills=bills, users=users)
 
-# --- BILLING ACTION ---
+# --- BILLING & PDF ---
 @app.route('/submit_prescription', methods=['POST'])
 def submit_prescription():
-    if session.get('role') != 'doctor':
-        return "Unauthorized", 403
-
+    if session.get('role') != 'doctor': return "Unauthorized", 403
     patient_name = request.form.get('patient_id')
     medicine_ids = request.form.getlist('medicine[]')
     quantities = request.form.getlist('qty[]')
+    total_bill, items_prescribed = 0.0, []
     
-    total_bill = 0.0
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         for m_id, qty in zip(medicine_ids, quantities):
-            cursor.execute("SELECT price FROM inventory WHERE id = ?", (m_id,))
-            price = cursor.fetchone()[0]
-            total_bill += (price * int(qty))
-            cursor.execute("UPDATE inventory SET stock = stock - ? WHERE id = ?", (qty, m_id))
-        
-        cursor.execute("INSERT INTO bills (patient_name, total_amount) VALUES (?, ?)", (patient_name, total_bill))
+            med = cursor.execute("SELECT name, price FROM inventory WHERE id = ?", (m_id,)).fetchone()
+            if med:
+                total_bill += (med[1] * int(qty))
+                items_prescribed.append(f"{med[0]} (x{qty})")
+                cursor.execute("UPDATE inventory SET stock = stock - ? WHERE id = ?", (qty, m_id))
+        cursor.execute("INSERT INTO bills (patient_name, total_amount, medicine_list) VALUES (?, ?, ?)", 
+                       (patient_name, total_bill, ", ".join(items_prescribed)))
         conn.commit()
-        
-    return f"<h1>Bill Generated! Total: ₹{total_bill}</h1><a href='/doctor/dashboard'>Back to Dashboard</a>"
+    return f"<h1>Bill Generated! Total: INR {total_bill}</h1><a href='/doctor/dashboard'>Back</a>"
 
-# --- UTILITY ROUTES ---
+@app.route('/download_bill/<int:bill_id>')
+def download_bill(bill_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        bill = conn.execute("SELECT * FROM bills WHERE id = ?", (bill_id,)).fetchone()
+    
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 24)
+    pdf.cell(200, 20, txt="MediSync Healthcare", ln=True, align='C')
+    pdf.set_font("Arial", '', 12)
+    pdf.cell(100, 10, txt=f"Invoice: #MS-{bill['id']}")
+    pdf.cell(100, 10, txt=f"Date: {bill['date']}", ln=True, align='R')
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Patient: {bill['patient_name']}", ln=True)
+    pdf.cell(140, 10, txt="Description", border=1)
+    pdf.cell(50, 10, txt="Amount", border=1, ln=True)
+    pdf.cell(140, 10, txt=str(bill['medicine_list']), border=1)
+    pdf.cell(50, 10, txt=f"INR {bill['total_amount']}", border=1, ln=True)
+    
+    output = io.BytesIO()
+    pdf_out = pdf.output(dest='S').encode('latin-1')
+    output.write(pdf_out)
+    output.seek(0)
+    return send_file(output, as_attachment=True, download_name=f"Bill_{bill_id}.pdf", mimetype='application/pdf')
+
 @app.route('/registration-success')
 def registration_success():
     return render_template('success.html')

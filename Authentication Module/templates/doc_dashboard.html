@@ -12,43 +12,66 @@
 <nav class="navbar navbar-dark bg-primary mb-4">
     <div class="container-fluid">
         <span class="navbar-brand mb-0 h1"><i class="bi bi-heart-pulse"></i> MediSync Doctor Portal</span>
-        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3">Dr. {{ session['user'] }}</span>
+            <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+        </div>
     </div>
 </nav>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white font-weight-bold">Select Patient</div>
-                <div class="card-body">
-                    <select class="form-select mb-3" id="patientSelect" name="patient_id">
-                        <option selected disabled>Choose Patient...</option>
-                        <option value="1">Patient: Chirag (ID: 101)</option>
-                        <option value="2">Patient: Varun (ID: 102)</option>
-                    </select>
-                    <div class="small text-muted">Recent Vitals: BP 120/80, Temp 98.6°F</div>
+    <form action="/submit_prescription" method="POST">
+        <div class="row">
+            <!-- Patient Selection -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white fw-bold">Select Patient</div>
+                    <div class="card-body">
+                        <select class="form-select mb-3" id="patientSelect" name="patient_id" required>
+                            <option selected disabled value="">Choose Patient...</option>
+                            {% for patient in patients %}
+                                <option value="{{ patient.name }}">Patient: {{ patient.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="small text-muted italic">Only registered users with 'patient' role appear here.</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white fw-bold">Recent Bills Generated</div>
+                    <ul class="list-group list-group-flush">
+                        {% for bill in recent_bills %}
+                        <li class="list-group-item small d-flex justify-content-between">
+                            <span>{{ bill.patient_name }}</span>
+                            <span class="fw-bold text-success">₹{{ bill.total_amount }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <span>Digital Prescription & Billing</span>
-                    <button type="button" class="btn btn-success btn-sm" onclick="addRow()">
-                        <i class="bi bi-plus-circle"></i> Add Medicine
-                    </button>
-                </div>
-                <div class="card-body">
-                    <form action="/submit_prescription" method="POST">
+            <!-- Digital Prescription -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Digital Prescription & Billing</span>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addRow()">
+                            <i class="bi bi-plus-circle"></i> Add Medicine
+                        </button>
+                    </div>
+                    <div class="card-body">
                         <div id="medicineRows">
                             <div class="row g-2 mb-3 medicine-row">
                                 <div class="col-md-6">
                                     <label class="form-label small text-muted">Medicine Name</label>
                                     <select class="form-select" name="medicine[]" required>
-                                        <option value="10" data-price="50">Paracetamol (₹50)</option>
-                                        <option value="11" data-price="120">Amoxicillin (₹120)</option>
+                                        <option selected disabled value="">Select Medicine...</option>
+                                        {% for med in medicines %}
+                                            <option value="{{ med.id }}">
+                                                {{ med.name }} (Stock: {{ med.stock }}) - ₹{{ med.price }}
+                                            </option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -69,13 +92,15 @@
 
                         <hr>
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Generate Prescription & Invoice</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-receipt"></i> Generate Prescription & Invoice
+                            </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <script>
@@ -84,8 +109,12 @@
         <div class="row g-2 mb-3 medicine-row">
             <div class="col-md-6">
                 <select class="form-select" name="medicine[]" required>
-                    <option value="10" data-price="50">Paracetamol (₹50)</option>
-                    <option value="11" data-price="120">Amoxicillin (₹120)</option>
+                    <option selected disabled value="">Select Medicine...</option>
+                    {% for med in medicines %}
+                        <option value="{{ med.id }}">
+                            {{ med.name }} (Stock: {{ med.stock }}) - ₹{{ med.price }}
+                        </option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="col-md-3">

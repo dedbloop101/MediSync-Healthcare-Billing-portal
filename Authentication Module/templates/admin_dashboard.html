@@ -1,3 +1,4 @@
+<!-- Replace your existing <body> content or entire file with this -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +16,7 @@
     </nav>
 
     <div class="container mt-4">
+        <!-- Dashboard Stats -->
         <div class="row text-center mb-4">
             <div class="col-md-4">
                 <div class="card shadow-sm border-primary">
@@ -46,8 +48,9 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow-sm">
+            <!-- User Management -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white"><b>Registered Users</b></div>
                     <div class="card-body p-0">
                         <table class="table table-hover mb-0">
@@ -61,8 +64,10 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card shadow-sm">
+
+            <!-- Inventory Tracker -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white"><b>Inventory & Pricing</b></div>
                     <div class="card-body p-0">
                         <table class="table table-hover mb-0">
@@ -73,6 +78,31 @@
                                     <td>{{ item.name }}</td>
                                     <td><span class="{% if item.stock < 20 %}text-danger fw-bold{% endif %}">{{ item.stock }}</span></td>
                                     <td>₹{{ item.price }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Records (NEW) -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white"><b>All Billing Records</b></div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead><tr><th>Patient</th><th>Amount</th><th>Action</th></tr></thead>
+                            <tbody>
+                                {% for bill in bills %}
+                                <tr>
+                                    <td>{{ bill.patient_name }}</td>
+                                    <td>₹{{ bill.total_amount }}</td>
+                                    <td>
+                                        <a href="/download_bill/{{ bill.id }}" class="btn btn-sm btn-outline-primary py-0">
+                                            <i class='bx bxs-file-pdf'></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

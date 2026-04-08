@@ -1,3 +1,4 @@
+<!-- Replace your existing <body> content or entire file with this -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +23,7 @@
             <div class="col-md-10">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
-                        <h4 class="mb-4">My Billing History</h4>
+                        <h4 class="mb-4"><i class='bx bx-history'></i> My Billing History</h4>
                         {% if bills %}
                         <div class="table-responsive">
                             <table class="table table-borderless align-middle">
@@ -31,7 +32,8 @@
                                         <th>Date</th>
                                         <th>Bill ID</th>
                                         <th>Total Amount</th>
-                                        <th class="text-end">Status</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Invoice</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -39,8 +41,13 @@
                                     <tr>
                                         <td>{{ bill.date }}</td>
                                         <td>#MS-{{ bill.id }}</td>
-                                        <td class="fw-bold">₹{{ bill.total_amount }}</td>
-                                        <td class="text-end"><span class="badge bg-success">Paid</span></td>
+                                        <td class="fw-bold text-success">₹{{ bill.total_amount }}</td>
+                                        <td><span class="badge bg-success">Paid</span></td>
+                                        <td class="text-end">
+                                            <a href="/download_bill/{{ bill.id }}" class="btn btn-sm btn-primary">
+                                                <i class='bx bxs-download'></i> PDF
+                                            </a>
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
