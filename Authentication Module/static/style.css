@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+/* Professional MediSync Variables */
+:root {
+  --ms-blue: #0d6efd;
+  --ms-dark: #212529;
+  --ms-glass: rgba(255, 255, 255, 0.2);
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
@@ -7,22 +14,31 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: url(./bg-2.jpg) no-repeat;
-  background-position: center;
+  /* Ensure the background image path is correct relative to the CSS file */
+  background: url('./bg-2.jpg') no-repeat center;
+}
+
+/* Add a dark overlay to make the white cards pop */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: -1;
 }
 
 .container {
   perspective: 1000px;
-  width: 380px;
+  width: 400px;
   position: relative;
 }
 
 .flip-card {
   width: 100%;
-  min-height: 560px; /* Increased to fit the role selector */
+  min-height: 600px; /* Slightly increased for comfortable spacing */
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.6s;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .flipped {
@@ -31,25 +47,28 @@ body {
 
 .form-box {
   width: 100%;
-  height: auto;
+  height: 100%;
   position: absolute;
   backface-visibility: hidden;
-  background: rgba(255, 255, 255, 0.25); /* Slightly more opaque for better contrast */
-  backdrop-filter: blur(15px);
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
   text-align: center;
-  padding: 30px 25px;
+  padding: 40px 30px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .login {
-  font-size: 40px;
-  margin-bottom: 20px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 #register-form {
@@ -59,81 +78,77 @@ body {
 .input-box {
   position: relative;
   width: 100%;
-  margin: 12px 0;
+  margin-bottom: 20px;
 }
 
-/* FORCE VISIBILITY FOR ROLE SELECTOR */
+.input-box input, 
 .input-box select {
   width: 100%;
-  padding: 10px 40px 10px 12px;
-  border: 1.5px solid #000 !important; /* Thick black border */
-  border-radius: 6px;
-  background-color: #ffffff !important; /* Solid white background */
-  color: #000 !important; /* Pure black text */
+  padding: 12px 40px 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9); /* High visibility */
+  color: #333;
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  box-sizing: border-box;
+  outline: none;
 }
 
-/* Ensure the dropdown icon stays on top */
-.input-box i.bxs-briefcase {
-  color: #000 !important;
-  z-index: 5;
+.input-box select {
+  cursor: pointer;
+  appearance: none; /* Remove default arrow to use Boxicons */
+  -webkit-appearance: none;
 }
 
 .input-box i {
   position: absolute;
-  right: 12px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: #333;
-  font-size: 18px;
+  color: var(--ms-blue);
+  font-size: 20px;
 }
 
 .btn {
   width: 100%;
-  padding: 12px;
-  background: #007bff;
-  color: white !important; /* Force white text on blue button */
+  padding: 14px;
+  background: var(--ms-blue);
+  color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  margin-top: 15px;
+  transition: 0.3s;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
 }
 
 .btn:hover {
   background: #0056b3;
+  transform: translateY(-2px);
 }
 
 .toggle-btn {
   background: none;
   border: none;
-  color: #000; /* Dark text for light background */
-  font-weight: 600;
+  color: #fff;
+  font-weight: 400;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 25px;
   font-size: 14px;
 }
 
 .toggle-btn span {
-  color: #007bff;
+  color: #fff;
+  font-weight: 700;
   text-decoration: underline;
 }
 
+/* Password Strength Indicator */
 #password-strength {
-  margin-top: 5px;
-  font-size: 12px;
-  font-weight: bold;
-  color: #d9534f; /* Alert red for visibility */
-}
-
-@media (min-width: 768px) {
-  .container {
-    width: 400px;
-  }
+  margin-top: -10px;
+  margin-bottom: 15px;
+  font-size: 11px;
+  text-align: left;
+  padding-left: 5px;
 }
