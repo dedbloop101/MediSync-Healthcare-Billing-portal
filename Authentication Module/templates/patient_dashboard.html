@@ -10,59 +10,20 @@
         :root { --ms-blue: #0d6efd; --sidebar-width: 280px; }
         body { background: #f4f7f6; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
         
-        /* Floating Sidebar to match Doctor Dashboard */
         .sidebar { 
-            width: var(--sidebar-width); 
-            height: 95vh; 
-            position: fixed; 
-            top: 2.5vh;
-            left: 20px;
-            background: #fff; 
-            border-radius: 20px;
-            padding: 2.5rem 1.5rem; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            z-index: 1000;
+            width: var(--sidebar-width); height: 95vh; position: fixed; top: 2.5vh; left: 20px;
+            background: #fff; border-radius: 20px; padding: 2.5rem 1.5rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); z-index: 1000;
         }
         
-        .main-content { 
-            margin-left: calc(var(--sidebar-width) + 40px); 
-            padding: 2.5rem; 
-            width: calc(100% - (var(--sidebar-width) + 60px)); 
-        }
+        .main-content { margin-left: calc(var(--sidebar-width) + 40px); padding: 2.5rem; width: calc(100% - (var(--sidebar-width) + 60px)); }
         
-        .nav-link { 
-            color: #5f6368; 
-            padding: 0.9rem 1.2rem; 
-            border-radius: 12px; 
-            margin-bottom: 0.8rem; 
-            display: flex; 
-            align-items: center; 
-            transition: 0.3s ease; 
-            font-weight: 500; 
-            text-decoration: none;
-        }
-        
-        .nav-link:hover, .nav-link.active { 
-            background: var(--ms-blue); 
-            color: #fff !important; 
-            transform: translateX(5px);
-        }
-        
+        .nav-link { color: #5f6368; padding: 0.9rem 1.2rem; border-radius: 12px; margin-bottom: 0.8rem; display: flex; align-items: center; transition: 0.3s ease; font-weight: 500; text-decoration: none; }
+        .nav-link:hover, .nav-link.active { background: var(--ms-blue); color: #fff !important; transform: translateX(5px); }
         .nav-link i { margin-right: 15px; font-size: 1.5rem; }
         
-        .card { 
-            border: none; 
-            border-radius: 20px; 
-            background: #fff;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.05); 
-        }
-        
-        .slot-card { 
-            background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); 
-            color: white; 
-            border: none;
-        }
-
+        .card { border: none; border-radius: 20px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+        .slot-card { background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); color: white; border: none; }
         .btn-light { border-radius: 12px; font-weight: 600; padding: 12px; }
         .form-control, .form-select { border-radius: 10px; border: 1px solid #eee; padding: 10px; }
     </style>
@@ -86,11 +47,11 @@
     <header class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1 class="fw-bold mb-1" style="color: #2d3436;">Hello, {{ session['user'] }}</h1>
-            <p class="text-muted">Welcome to your patient portal. Stay healthy!</p>
+            <p class="text-muted">Welcome back to your healthcare portal.</p>
         </div>
         <div class="text-end">
             <div class="bg-white p-3 rounded-pill shadow-sm border px-4">
-                <i class='bx bxs-map text-primary me-2'></i> <span class="fw-bold">Graphic Era Clinic, UK</span>
+                <i class='bx bxs-map text-primary me-2'></i> <span class="fw-bold">Medi-Sync Clinic, IN</span>
             </div>
         </div>
     </header>
@@ -99,8 +60,7 @@
         <div class="col-md-4">
             <div class="card slot-card p-4 mb-4 shadow-lg">
                 <h4 class="fw-bold mb-3"><i class='bx bx-calendar-plus'></i> Book a Slot</h4>
-                <p class="small mb-4 opacity-75">Schedule your next consultation with our specialists in seconds.</p>
-                
+                <p class="small mb-4 opacity-75">Schedule your next consultation in seconds.</p>
                 <form id="slotForm">
                     <div class="mb-3">
                         <label class="small fw-bold mb-2">Preferred Date</label>
@@ -115,14 +75,9 @@
                         </select>
                     </div>
                     <button type="button" class="btn btn-light text-primary w-100 py-3 shadow-sm" onclick="confirmBooking()">
-                        <i class='bx bx-check-double me-2'></i> Confirm Appointment
+                        Confirm Appointment
                     </button>
                 </form>
-            </div>
-
-            <div class="card p-4 border-0 shadow-sm bg-primary-subtle border-start border-primary border-4">
-                <h6 class="fw-bold text-primary mb-2"><i class='bx bxs-bulb'></i> Health Tip</h6>
-                <p class="small text-dark mb-0">"Consistent sleep of 7-8 hours is the most effective way to reset your brain and body health."</p>
             </div>
         </div>
 
@@ -136,12 +91,13 @@
                 {% if bills %}
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="text-muted small">
+                        <thead class="text-muted small text-uppercase">
                             <tr>
-                                <th class="border-0">DATE</th>
-                                <th class="border-0">BILL ID</th>
-                                <th class="border-0">TOTAL AMOUNT</th>
-                                <th class="border-0 text-end">ACTION</th>
+                                <th>Date</th>
+                                <th>Bill ID</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,11 +105,24 @@
                             <tr>
                                 <td class="small">{{ bill.date[:10] }}</td>
                                 <td class="fw-bold">#MS-{{ bill.id }}</td>
-                                <td class="text-success fw-bold">₹{{ bill.total_amount }}</td>
+                                <td class="text-dark fw-bold">₹{{ bill.total_amount }}</td>
+                                <td>
+                                    {% if bill.status == 'Paid' %}
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Paid</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">Pending</span>
+                                    {% endif %}
+                                </td>
                                 <td class="text-end">
-                                    <a href="/download_bill/{{ bill.id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                        <i class='bx bxs-download'></i> PDF
-                                    </a>
+                                    {% if bill.status == 'Paid' %}
+                                        <a href="/download_bill/{{ bill.id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                            <i class='bx bxs-download'></i> Invoice
+                                        </a>
+                                    {% else %}
+                                        <a href="/patient/pay/{{ bill.id }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                                            <i class='bx bx-credit-card'></i> Pay Now
+                                        </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -174,13 +143,9 @@
 <script>
     function confirmBooking() {
         const date = document.getElementById('bookingDate').value;
-        if(!date) {
-            alert("Please pick a date first!");
-            return;
-        }
-        alert("Success! Your appointment for " + date + " has been requested. You will receive a notification shortly.");
+        if(!date) { alert("Please pick a date first!"); return; }
+        alert("Success! Your appointment for " + date + " has been requested.");
     }
 </script>
-
 </body>
 </html>

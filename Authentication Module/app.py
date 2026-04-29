@@ -12,8 +12,9 @@ app.secret_key = os.urandom(24)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'database.db')
 
-login_attempts = {}
+login_attempts = {} # In-memory tracking for login attempts (email: count)
 
+#----- Initializing Database with necessary tables and seed data -----
 def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
@@ -31,8 +32,11 @@ def init_db():
         # Billing Table: Master transaction ledger
         cursor.execute('''CREATE TABLE IF NOT EXISTS bills (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
-            patient_name TEXT, total_amount REAL, 
-            medicine_list TEXT, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+            patient_name TEXT, 
+            total_amount REAL, 
+            medicine_list TEXT, 
+            status TEXT DEFAULT 'Pending', 
+            date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         
         # Seed Initial Inventory
         cursor.execute("SELECT COUNT(*) FROM inventory")
@@ -204,6 +208,7 @@ def admin_download_full_report():
     output.seek(0)
     return send_file(output, as_attachment=True, download_name="MediSync_Audit_Report.pdf", mimetype='application/pdf')
 
+#--- DOCTOR PRESCRIPTION & BILLING ---
 @app.route('/submit_prescription', methods=['POST'])
 def submit_prescription():
     if session.get('role') != 'doctor': return "Unauthorized", 403
@@ -227,6 +232,7 @@ def submit_prescription():
             conn.commit()
     return render_template('success_billing.html', total=total_bill, patient=patient_name)
 
+#--- PDF GENERATION FOR INDIVIDUAL BILLS ---
 @app.route('/download_bill/<int:bill_id>')
 def download_bill(bill_id):
     with sqlite3.connect(DB_PATH) as conn:
@@ -252,6 +258,23 @@ def download_bill(bill_id):
     output.write(pdf_out)
     output.seek(0)
     return send_file(output, as_attachment=True, download_name=f"Invoice_{bill_id}.pdf", mimetype='application/pdf')
+
+#--- CHECKOUT & PAYMENT PAGE ---
+@app.route('/patient/pay/<int:bill_id>')
+def checkout(bill_id):
+    if session.get('role') != 'patient': return redirect(url_for('home'))
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        bill = conn.execute("SELECT * FROM bills WHERE id = ?", (bill_id,)).fetchone()
+    return render_template('checkout.html', bill=bill)
+
+@app.route('/payment/success/<int:bill_id>')
+def payment_success(bill_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        # Update the status to 'Paid' upon successful payment
+        conn.execute("UPDATE bills SET status = 'Paid' WHERE id = ?", (bill_id,))
+        conn.commit()
+    return render_template('payment_confirmed.html', bill_id=bill_id)
 
 @app.route('/logout')
 def logout():

@@ -7,8 +7,10 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <title>MediSync | Login & Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
-        /* Styling the dropdown to match your theme */
         .input-box select {
             width: 100%;
             background: transparent;
@@ -19,8 +21,14 @@
             cursor: pointer;
         }
         .input-box select option {
-            background: #333; /* Dark background for dropdown options */
+            background: #333;
             color: #fff;
+        }
+        /* Style for the official Google Button container */
+        .social-btns {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -29,7 +37,6 @@
     <div class="container">
         <div class="flip-card" id="flip-card">
             
-            <!-- Login Form -->
             <div class="form-box" id="login-form">
                 <h2 class="login">Login</h2>
                 <form id="loginForm" action="/login" method="POST">
@@ -43,16 +50,19 @@
                     </div>
                     <button class="btn" type="submit">Login</button>
                 </form>
+                
                 <p class="para"><b>Or login with</b></p>
-                <div class="social-btns">
-                    <button type="button"><i class='bx bxl-google'></i></button>
-                    <button type="button"><i class='bx bxl-facebook'></i></button>
-                    <button type="button"><i class='bx bxl-linkedin'></i></button>
+                
+                <div id="g_id_onload"
+                     data-client_id="1026976094861-bj5pov659p50fmksnhgpaj10qfq2oll7.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
                 </div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+
                 <button type="button" class="toggle-btn" id="to-register">Don't have an account? <span>Register</span></button>
             </div>
 
-            <!-- Register Form -->
             <div class="form-box" id="register-form">
                 <h2>Register</h2>
                 <form id="registerForm" action="/register" method="POST">
@@ -65,7 +75,6 @@
                         <i class='bx bxs-calendar'></i>
                     </div>
                     
-                    <!-- NEW: Role Selection Dropdown -->
                     <div class="input-box">
                         <select name="role" id="reg-role" required>
                             <option value="" disabled selected>Select Role</option>
@@ -85,21 +94,29 @@
                         <i class='bx bxs-lock-alt'></i>
                     </div>
 
-                    <div id="password-strength"></div>
                     <button class="btn" type="submit">Register</button>
                 </form>
+
                 <p class="para"><b>Or register with</b></p>
-                <div class="social-btns">
-                    <button type="button"><i class='bx bxl-google'></i></button>
-                    <button type="button"><i class='bx bxl-facebook'></i></button>
-                    <button type="button"><i class='bx bxl-linkedin'></i></button>
-                </div>
+                
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signup_with" data-size="large" data-logo_alignment="left"></div>
+
                 <button type="button" class="toggle-btn" id="to-login">Already have an account? <span>Login</span></button>
             </div>
         </div>
     </div>
 
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            
+            // For demo/presentation purposes:
+            alert("Google Authentication Successful! Redirecting to Dashboard...");
+            
+            window.location.href = "/patient/dashboard"; 
+        }
+    </script>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-
 </html>
