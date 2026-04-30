@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediSync | Patient Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root { --ms-blue: #0d6efd; --sidebar-width: 280px; }
+        body { background: #f4f7f6; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+        
+        .sidebar { 
+            width: var(--sidebar-width); height: 95vh; position: fixed; top: 2.5vh; left: 20px;
+            background: #fff; border-radius: 20px; padding: 2.5rem 1.5rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        
+        .main-content { margin-left: calc(var(--sidebar-width) + 40px); padding: 2.5rem; width: calc(100% - (var(--sidebar-width) + 60px)); }
+        
+        .nav-link { color: #5f6368; padding: 0.9rem 1.2rem; border-radius: 12px; margin-bottom: 0.8rem; display: flex; align-items: center; transition: 0.3s ease; font-weight: 500; text-decoration: none; }
+        .nav-link:hover, .nav-link.active { background: var(--ms-blue); color: #fff !important; transform: translateX(5px); }
+        .nav-link i { margin-right: 15px; font-size: 1.5rem; }
+        
+        .card { border: none; border-radius: 20px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+        .slot-card { background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); color: white; border: none; }
+        .btn-light { border-radius: 12px; font-weight: 600; padding: 12px; }
+        .form-control, .form-select { border-radius: 10px; border: 1px solid #eee; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar shadow-sm">
+    <h3 class="text-primary fw-bold mb-5 d-flex align-items-center px-3">
+        <i class='bx bxs-plus-circle me-3' style="font-size: 2.5rem;"></i> MediSync
+    </h3>
+    <nav class="nav flex-column">
+        <a class="nav-link active" href="/patient/dashboard"><i class='bx bxs-dashboard'></i> My Health</a>
+        <a class="nav-link" href="/patient/prescriptions"><i class='bx bx-file-blank'></i> Prescriptions</a>
+        <a class="nav-link" href="/patient/profile"><i class='bx bx-user-circle'></i> My Profile</a>
+        <hr class="my-5" style="opacity: 0.1;">
+        <a class="nav-link text-danger" href="/logout"><i class='bx bx-log-out-circle'></i> Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <header class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="fw-bold mb-1" style="color: #2d3436;">Hello, {{ session['user'] }}</h1>
+            <p class="text-muted">Welcome back to your healthcare portal.</p>
+        </div>
+        <div class="text-end">
+            <div class="bg-white p-3 rounded-pill shadow-sm border px-4">
+                <i class='bx bxs-map text-primary me-2'></i> <span class="fw-bold">Medi-Sync Clinic, IN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card slot-card p-4 mb-4 shadow-lg">
+                <h4 class="fw-bold mb-3"><i class='bx bx-calendar-plus'></i> Book a Slot</h4>
+                <p class="small mb-4 opacity-75">Schedule your next consultation in seconds.</p>
+                <form id="slotForm">
+                    <div class="mb-3">
+                        <label class="small fw-bold mb-2">Preferred Date</label>
+                        <input type="date" class="form-control border-0 shadow-sm" id="bookingDate" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="small fw-bold mb-2">Time Slot</label>
+                        <select class="form-select border-0 shadow-sm">
+                            <option>Morning (10:00 - 13:00)</option>
+                            <option>Afternoon (14:00 - 17:00)</option>
+                            <option>Evening (18:00 - 21:00)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-light text-primary w-100 py-3 shadow-sm" onclick="confirmBooking()">
+                        Confirm Appointment
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-4 shadow-sm border-0">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0"><i class='bx bx-history text-primary me-2'></i> Billing History</h4>
+                    <span class="badge bg-light text-dark border rounded-pill px-3">{{ bills|length }} Records</span>
+                </div>
+                
+                {% if bills %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="text-muted small text-uppercase">
+                            <tr>
+                                <th>Date</th>
+                                <th>Bill ID</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            <tr>
+                                <td class="small">{{ bill.date[:10] }}</td>
+                                <td class="fw-bold">#MS-{{ bill.id }}</td>
+                                <td class="text-dark fw-bold">₹{{ bill.total_amount }}</td>
+                                <td>
+                                    {% if bill.status == 'Paid' %}
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Paid</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if bill.status == 'Paid' %}
+                                        <a href="/download_bill/{{ bill.id }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                            <i class='bx bxs-download'></i> Invoice
+                                        </a>
+                                    {% else %}
+                                        <a href="/patient/pay/{{ bill.id }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                                            <i class='bx bx-credit-card'></i> Pay Now
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class='bx bx-receipt text-muted opacity-25' style="font-size: 80px;"></i>
+                    <p class="text-muted mt-3">No billing history available yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmBooking() {
+        const date = document.getElementById('bookingDate').value;
+        if(!date) { alert("Please pick a date first!"); return; }
+        alert("Success! Your appointment for " + date + " has been requested.");
+    }
+</script>
+</body>
+</html>

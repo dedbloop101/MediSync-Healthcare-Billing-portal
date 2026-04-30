@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediSync | My Prescriptions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root { --ms-blue: #0d6efd; --sidebar-width: 260px; }
+        body { background: #f4f7f6; font-family: 'Poppins', sans-serif; }
+        .sidebar { width: var(--sidebar-width); height: 100vh; position: fixed; background: #fff; padding: 25px; }
+        .main-content { margin-left: var(--sidebar-width); padding: 40px; }
+        .nav-link { color: #555; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; text-decoration: none; }
+        .nav-link:hover, .nav-link.active { background: var(--ms-blue); color: #fff !important; }
+        .card { border: none; border-radius: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar shadow-sm">
+    <h4 class="text-primary fw-bold mb-5"><i class='bx bxs-plus-circle'></i> MediSync</h4>
+    <nav class="nav flex-column">
+        <a class="nav-link" href="/patient/dashboard"><i class='bx bxs-dashboard'></i> My Health</a>
+        <a class="nav-link active" href="/patient/prescriptions"><i class='bx bx-file'></i> Prescriptions</a>
+        <a class="nav-link" href="/patient/profile"><i class='bx bx-user-circle'></i> Profile</a>
+        <hr>
+        <a class="nav-link text-danger" href="/logout"><i class='bx bx-log-out-circle'></i> Logout</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <h2 class="fw-bold mb-4">Prescription Archive</h2>
+    <div class="row">
+        {% for presc in prescriptions %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-4">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted small">{{ presc.date[:10] }}</span>
+                    <span class="badge bg-primary-subtle text-primary">Digital Record</span>
+                </div>
+                <h6 class="fw-bold">Medicines Prescribed:</h6>
+                <p class="text-dark">{{ presc.medicine_list }}</p>
+                <a href="/download_bill/{{ presc.id }}" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                    <i class='bx bxs-download'></i> Download Official PDF
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>
