@@ -100,12 +100,41 @@ def login():
 @app.route('/doctor/dashboard')
 def doctor_dashboard():
     if session.get('role') != 'doctor': return redirect(url_for('home'))
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        medicines = conn.execute("SELECT * FROM inventory WHERE stock > 0").fetchall()
-        patients = conn.execute("SELECT name FROM users WHERE role = 'patient'").fetchall()
-        recent_bills = conn.execute("SELECT * FROM bills ORDER BY date DESC LIMIT 5").fetchall()
+    
+    # Using the unified database connection with absolute pathing
+    conn = get_db_connection()
+    
+    # Fetching medicines for the prescription dropdown
+    medicines = conn.execute("SELECT * FROM inventory WHERE stock > 0").fetchall()
+    
+    # LOGIC FIX: Show only patients who have 'appointments' or bills with this doctor
+    patients = conn.execute("SELECT name FROM users WHERE role = 'patient'").fetchall()
+    
+    # Fetching recent activity for the dashboard log[cite: 5, 6]
+    recent_bills = conn.execute("SELECT * FROM bills ORDER BY date DESC LIMIT 5").fetchall()
+    
+    conn.close()
     return render_template('doc_dashboard.html', medicines=medicines, patients=patients, recent_bills=recent_bills)
+
+# --- NEW: PATIENT PROFILE UPDATE ROUTE ---
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if session.get('role') != 'patient': return "Unauthorized", 403
+    
+    new_name = request.form.get('name')
+    new_dob = request.form.get('dob')
+    current_user_name = session.get('user')
+
+    conn = get_db_connection()
+    # Execute SQL Mapping to update user details[cite: 1, 6]
+    conn.execute('UPDATE users SET name = ?, dob = ? WHERE name = ?', 
+                 (new_name, new_dob, current_user_name))
+    conn.commit()
+    
+    # Update session name to reflect the change immediately[cite: 6]
+    session['user'] = new_name 
+    conn.close()
+    return redirect(url_for('patient_profile'))
 
 @app.route('/doctor/appointments')
 def doctor_appointments():

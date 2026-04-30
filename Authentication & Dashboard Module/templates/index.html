@@ -8,6 +8,7 @@
     <title>MediSync | Login & Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
+    <!-- Google Identity Services Library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
@@ -24,19 +25,29 @@
             background: #333;
             color: #fff;
         }
-        /* Style for the official Google Button container */
         .social-btns {
             display: flex;
-            justify-content: center;
-            margin-top: 10px;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
         }
+        .para { margin-bottom: 10px; }
     </style>
 </head>
 
 <body>
+    <!-- 1. GLOBAL GOOGLE CONFIGURATION (Shared by both forms) -->
+    <div id="g_id_onload"
+         data-client_id="1026976094861-bj5pov659p50fmksnhgpaj10qfq2oll7.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+
     <div class="container">
         <div class="flip-card" id="flip-card">
             
+            <!-- LOGIN FORM -->
             <div class="form-box" id="login-form">
                 <h2 class="login">Login</h2>
                 <form id="loginForm" action="/login" method="POST">
@@ -51,18 +62,16 @@
                     <button class="btn" type="submit">Login</button>
                 </form>
                 
-                <p class="para"><b>Or login with</b></p>
-                
-                <div id="g_id_onload"
-                     data-client_id="1026976094861-bj5pov659p50fmksnhgpaj10qfq2oll7.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
+                <div class="social-btns">
+                    <p class="para"><b>Or login with</b></p>
+                    <!-- Login Button -->
+                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
                 </div>
-                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
 
                 <button type="button" class="toggle-btn" id="to-register">Don't have an account? <span>Register</span></button>
             </div>
 
+            <!-- REGISTER FORM -->
             <div class="form-box" id="register-form">
                 <h2>Register</h2>
                 <form id="registerForm" action="/register" method="POST">
@@ -72,7 +81,6 @@
                     </div>
                     <div class="input-box">
                         <input type="date" name="dob" id="reg-dob" required>
-                        <i class='bx bxs-calendar'></i>
                     </div>
                     
                     <div class="input-box">
@@ -97,9 +105,11 @@
                     <button class="btn" type="submit">Register</button>
                 </form>
 
-                <p class="para"><b>Or register with</b></p>
-                
-                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signup_with" data-size="large" data-logo_alignment="left"></div>
+                <div class="social-btns">
+                    <p class="para"><b>Or register with</b></p>
+                    <!-- 2. ADDED REGISTRATION BUTTON -->
+                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signup_with" data-size="large" data-logo_alignment="left"></div>
+                </div>
 
                 <button type="button" class="toggle-btn" id="to-login">Already have an account? <span>Login</span></button>
             </div>
@@ -110,9 +120,11 @@
         function handleCredentialResponse(response) {
             console.log("Encoded JWT ID token: " + response.credential);
             
-            // For demo/presentation purposes:
+            // For demo purposes:
             alert("Google Authentication Successful! Redirecting to Dashboard...");
             
+            // In a real scenario, we would send 'response.credential' to your Flask backend 
+            // to verify the user and create a session.
             window.location.href = "/patient/dashboard"; 
         }
     </script>

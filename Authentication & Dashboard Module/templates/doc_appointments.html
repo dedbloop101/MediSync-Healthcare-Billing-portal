@@ -37,7 +37,6 @@
                     <th>Patient Name</th>
                     <th>Status</th>
                     <th>Last Visit</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,7 +45,6 @@
                     <td><b>{{ appt.patient_name }}</b></td>
                     <td><span class="badge bg-success">Completed</span></td>
                     <td>{{ appt.date[:16] }}</td>
-                    <td><button class="btn btn-sm btn-outline-primary">View History</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
